@@ -1,36 +1,51 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/bidhan948/rsync-go/internal/server"
 	"github.com/spf13/cobra"
+
+	"github.com/bidhan948/rsync-go/internal/server"
+	"github.com/bidhan948/rsync-go/internal/ui"
 )
 
-var servePort int
-var serveDir string
+func newServeCmd() *cobra.Command {
+	var listen string
+	var dir string
 
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Start server to receive files",
-	Run: func(cmd *cobra.Command, args []string) {
-		cfg := server.Config{
-			Port:      servePort,
-			BaseDir:   serveDir,
-			AuthToken: authToken,
-		}
-		err := server.Run(cfg)
-		if err != nil {
-			log.Fatalf("server error: %v", err)
-		}
-	},
-}
+	cmd := &cobra.Command{
+		Use:   "serve",
+		Short: "Run in server mode to receive files",
+		Long: `Run an HTTP server that accepts file uploads.
 
-func init() {
-	rootCmd.AddCommand(serveCmd)
-	serveCmd.Flags().IntVar(&servePort, "port", 8080, "port to listen on")
-	serveCmd.Flags().StringVar(&serveDir, "dir", "./received", "directory to write files")
-	serveCmd.MarkFlagDirname("dir")
-	fmt.Print("")
+Example:
+  rsync-go serve --listen :8080 --dir ./received
+`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if listen == "" {
+				listen = ":8080"
+			}
+			if dir == "" {
+				dir = "./received"
+			}
+
+			ui.Info("Starting server...")
+			ui.Info("Listen: " + listen)
+			ui.Info("Output dir: " + dir)
+
+			cfg := server.Config{
+				ListenAddr: listen,
+				OutputDir:  dir,
+			}
+
+			if err := server.Run(cfg); err != nil {
+				log.Fatalf("server error: %v", err)
+			}
+		},
+	}
+
+	cmd.Flags().StringVar(&listen, "listen", ":8080", "address to listen on (e.g. :8080 or 0.0.0.0:8080)")
+	cmd.Flags().StringVar(&dir, "dir", "./received", "directory where received files will be stored")
+
+	return cmd
 }
