@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 
+	"github.com/bidhan948/rsync-go/internal/client"
 	"github.com/spf13/cobra"
 )
 

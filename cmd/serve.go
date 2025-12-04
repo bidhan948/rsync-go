@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/bidhan948/rsync-go/internal/server"
 	"github.com/spf13/cobra"
 )
 
